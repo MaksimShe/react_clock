@@ -1,55 +1,49 @@
-/* eslint-disable @typescript-eslint/lines-between-class-members */
 import React from 'react';
 
-export class Clock extends React.Component {
-  state = {
+type ClockProps = {
+  name: string;
+};
+
+type ClockState = {
+  today: Date;
+};
+
+export class Clock extends React.Component<ClockProps, ClockState> {
+  state: ClockState = {
     today: new Date(),
-    clockName: this.getRandomName(),
   };
 
-  timerIdName: number = 0;
-  timerIdDate: number = 0;
-
-  handleRightClick = (event: MouseEvent) => {
-    event.preventDefault();
-  };
+  private timerIdDate = 0;
 
   componentDidMount(): void {
-    this.timerIdName = window.setInterval(() => {
-      this.setState({
-        clockName: this.getRandomName(),
-      });
-    }, 3300);
-
     this.timerIdDate = window.setInterval(() => {
-      this.setState({
-        today: new Date(),
-      });
+      this.setState({ today: new Date() });
+      // eslint-disable-next-line no-console
+      console.log(this.state.today.toUTCString().slice(-12, -4));
     }, 1000);
-    // eslint-disable-next-line no-console
-    console.log(this.state.today.toUTCString().slice(-12, -4));
+  }
+
+  componentDidUpdate(prevProps: ClockProps): void {
+    if (prevProps.name !== this.props.name) {
+      // eslint-disable-next-line prettier/prettier, no-console
+      console.warn(`Clock name changed from ${prevProps.name} to ${this.props.name}`);
+    }
   }
 
   componentWillUnmount(): void {
-    clearInterval(this.timerIdName);
     clearInterval(this.timerIdDate);
   }
 
-  getRandomName(): string {
-    const value = Date.now().toString().slice(-4);
-
-    return `Clock-${value}`;
-  }
-
   render() {
+    const { name } = this.props;
+    const { today } = this.state;
+
     return (
       <div className="Clock">
-        <strong className="Clock__name">{this.state.clockName}</strong>
-
+        <strong className="Clock__name">{name}</strong>
         {' time is '}
-
         <span className="Clock__time">
-          {this.state.today.toUTCString().slice(-12, -4)}
+          {today.toUTCString().slice(-12, -4)}
         </span>
       </div>
     );

@@ -4,46 +4,60 @@ import { Clock } from './components/Clock';
 
 type AppState = {
   hasClock: boolean;
+  clockName: string;
 };
 
 export class App extends React.Component<unknown, AppState> {
   state: AppState = {
     hasClock: true,
+    clockName: 'Clock-0',
   };
+
+  private nameTimerId = 0;
+
+  getRandomName(): string {
+    const value = Date.now().toString().slice(-4);
+
+    return `Clock-${value}`;
+  }
 
   handleRightClick = (event: MouseEvent) => {
     event.preventDefault();
-    this.setState(prevState => ({
-      hasClock: !prevState.hasClock,
-    }));
-
-    window.removeEventListener('contextmenu', this.handleRightClick);
-    window.addEventListener('contextmenu', this.handleRightClick);
+    this.setState({ hasClock: false });
   };
 
   handleLeftClick = () => {
-    this.setState({
-      hasClock: true,
-    });
-
-    window.removeEventListener('click', this.handleLeftClick);
+    this.setState({ hasClock: true });
   };
 
   componentDidMount(): void {
     window.addEventListener('contextmenu', this.handleRightClick);
+
+    this.nameTimerId = window.setInterval(() => {
+      this.setState({
+        clockName: this.getRandomName(),
+      });
+    }, 3300);
   }
 
-  componentDidUpdate(): void {
-    if (!this.state.hasClock) {
+  componentDidUpdate(_: unknown, prevState: AppState): void {
+    if (!this.state.hasClock && prevState.hasClock !== this.state.hasClock) {
       window.addEventListener('click', this.handleLeftClick);
     }
+  }
+
+  componentWillUnmount(): void {
+    clearInterval(this.nameTimerId);
+    console.log('App component is being unmounted');
+    window.removeEventListener('contextmenu', this.handleRightClick);
+    window.removeEventListener('click', this.handleLeftClick);
   }
 
   render() {
     return (
       <div className="App">
         <h1>React clock</h1>
-        {this.state.hasClock && <Clock />}
+        {this.state.hasClock && <Clock name={this.state.clockName} />}
       </div>
     );
   }
