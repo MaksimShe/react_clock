@@ -23,7 +23,9 @@ export class App extends React.Component<unknown, AppState> {
 
   handleRightClick = (event: MouseEvent) => {
     event.preventDefault();
-    this.setState({ hasClock: false });
+    this.setState(prevState => ({
+      hasClock: !prevState.hasClock,
+    }));
   };
 
   handleLeftClick = () => {
@@ -32,6 +34,7 @@ export class App extends React.Component<unknown, AppState> {
 
   componentDidMount(): void {
     window.addEventListener('contextmenu', this.handleRightClick);
+    window.addEventListener('click', this.handleLeftClick);
 
     this.nameTimerId = window.setInterval(() => {
       this.setState({
@@ -40,17 +43,13 @@ export class App extends React.Component<unknown, AppState> {
     }, 3300);
   }
 
-  componentDidUpdate(_: unknown, prevState: AppState): void {
-    if (!this.state.hasClock && prevState.hasClock !== this.state.hasClock) {
-      window.addEventListener('click', this.handleLeftClick);
-    }
-  }
-
   componentWillUnmount(): void {
     clearInterval(this.nameTimerId);
-    console.log('App component is being unmounted');
     window.removeEventListener('contextmenu', this.handleRightClick);
     window.removeEventListener('click', this.handleLeftClick);
+
+    // eslint-disable-next-line no-console
+    console.log('App component is being unmounted');
   }
 
   render() {
